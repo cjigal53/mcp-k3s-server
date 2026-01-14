@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Issue Information</h2>
+    <p><strong>Title:</strong> {{ issue.title }}</p>
+    <p><strong>Number:</strong> #{{ issue.number }}</p>
+    <p><strong>State:</strong> {{ issue.state }}</p>
+    <p><strong>Reporter:</strong> {{ issue.user.login }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ issue.body }}</p>
+</div>
+
+<div class="card">
+    <h2>Feature Planning Analysis</h2>
+    <p><strong>Summary:</strong></p>
+    <p>{{ analysis.summary }}</p>
+
+    <h3>Implementation Impact</h3>
+    <p>
+        <strong>Expected Impact:</strong>
+        <span class="status-badge status-{{ analysis.impact | lower }}">
+            {{ analysis.impact }}
+        </span>
+    </p>
+
+    {% if analysis.risks %}
+    <h3>Potential Risks</h3>
+    <ul>
+        {% for risk in analysis.risks %}
+        <li>{{ risk }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Cluster Capacity Assessment</h2>
+    <div class="metrics">
+        {% if cluster_data.health %}
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.nodes_ready | default('N/A') }}/{{ cluster_data.health.nodes_count | default('N/A') }}</div>
+            <div class="metric-label">Nodes Ready</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.pods_running | default('N/A') }}</div>
+            <div class="metric-label">Pods Running</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.services_count | default('N/A') }}</div>
+            <div class="metric-label">Services</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.deployments_count | default('N/A') }}</div>
+            <div class="metric-label">Deployments</div>
+        </div>
+        {% else %}
+        <p>Cluster information not available.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recommended Implementation Steps</h2>
+    {% if analysis.implementation_steps %}
+    <ol>
+        {% for step in analysis.implementation_steps %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+    {% elif analysis.recommendations %}
+    <ol>
+        {% for rec in analysis.recommendations %}
+        <li>{{ rec }}</li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p>No specific implementation steps provided.</p>
+    {% endif %}
+</div>
+
+{% if cluster_data.deployments %}
+<div class="card">
+    <h2>Current Deployments</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Namespace</th>
+                <th>Ready</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for deployment in cluster_data.deployments[:10] %}
+            <tr>
+                <td>{{ deployment.name }}</td>
+                <td>{{ deployment.namespace }}</td>
+                <td>{{ deployment.ready }}</td>
+                <td style="font-size: 12px;">{{ deployment.image }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if cluster_data.deployments | length > 10 %}
+    <p style="color: #999; font-size: 12px; margin-top: 10px;">
+        Showing 10 of {{ cluster_data.deployments | length }} deployments
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Recommendation Summary</h2>
+    {% if analysis.recommendations %}
+    <div class="recommendations">
+        <ol>
+            {% for rec in analysis.recommendations %}
+            <li>{{ rec }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% else %}
+    <p>No additional recommendations at this time.</p>
+    {% endif %}
+</div>
+{% endblock %}

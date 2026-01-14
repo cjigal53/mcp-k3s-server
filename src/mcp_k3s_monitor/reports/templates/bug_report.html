@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Issue Information</h2>
+    <p><strong>Title:</strong> {{ issue.title }}</p>
+    <p><strong>Number:</strong> #{{ issue.number }}</p>
+    <p><strong>State:</strong> {{ issue.state }}</p>
+    <p><strong>Reporter:</strong> {{ issue.user.login }}</p>
+</div>
+
+<div class="card">
+    <h2>Triage Analysis</h2>
+    <p><strong>Severity:</strong>
+        <span class="status-badge status-{{ analysis.severity | lower }}">
+            {{ analysis.severity }}
+        </span>
+    </p>
+    <p><strong>Summary:</strong></p>
+    <p>{{ analysis.summary }}</p>
+
+    {% if analysis.root_cause %}
+    <h3>Root Cause</h3>
+    <p>{{ analysis.root_cause }}</p>
+    {% endif %}
+
+    {% if analysis.risks %}
+    <h3>Risks and Concerns</h3>
+    <ul>
+        {% for risk in analysis.risks %}
+        <li>{{ risk }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Recommended Debugging Steps</h2>
+    {% if analysis.debugging_steps %}
+    <ol>
+        {% for step in analysis.debugging_steps %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p>No specific debugging steps provided.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Cluster Health</h2>
+    <div class="metrics">
+        {% if cluster_data.health %}
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.nodes_ready | default('N/A') }}/{{ cluster_data.health.nodes_count | default('N/A') }}</div>
+            <div class="metric-label">Nodes Ready</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.pods_running | default('N/A') }}</div>
+            <div class="metric-label">Pods Running</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.pods_failed | default(0) }}</div>
+            <div class="metric-label">Pods Failed</div>
+        </div>
+        {% else %}
+        <p>Cluster health information not available.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if cluster_data.failed_pods %}
+<div class="card">
+    <h2>Failed Pods</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Namespace</th>
+                <th>Status</th>
+                <th>Ready</th>
+                <th>Restarts</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pod in cluster_data.failed_pods %}
+            <tr>
+                <td>{{ pod.name }}</td>
+                <td>{{ pod.namespace }}</td>
+                <td>
+                    <span class="status-badge status-{{ pod.status | lower }}">
+                        {{ pod.status }}
+                    </span>
+                </td>
+                <td>{{ pod.ready }}</td>
+                <td>{{ pod.restarts | default(0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if cluster_data.pod_logs %}
+<div class="card">
+    <h2>Pod Logs</h2>
+    {% for pod_name, logs in cluster_data.pod_logs.items() %}
+    <h3>{{ pod_name }}</h3>
+    <div class="code-block">
+{{ logs }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if analysis.recommendations %}
+<div class="card">
+    <h2>Recommendations</h2>
+    <div class="recommendations">
+        <ol>
+            {% for rec in analysis.recommendations %}
+            <li>{{ rec }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

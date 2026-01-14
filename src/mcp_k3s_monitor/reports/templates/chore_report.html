@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Maintenance Task Information</h2>
+    <p><strong>Title:</strong> {{ issue.title }}</p>
+    <p><strong>Number:</strong> #{{ issue.number }}</p>
+    <p><strong>State:</strong> {{ issue.state }}</p>
+    <p><strong>Reporter:</strong> {{ issue.user.login }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ issue.body }}</p>
+</div>
+
+<div class="card">
+    <h2>Maintenance Assessment</h2>
+    <p><strong>Summary:</strong></p>
+    <p>{{ analysis.summary }}</p>
+
+    <h3>Change Impact</h3>
+    <p>
+        <strong>Impact Level:</strong>
+        <span class="status-badge status-{{ analysis.impact | lower }}">
+            {{ analysis.impact }}
+        </span>
+    </p>
+
+    {% if analysis.risks %}
+    <h3>Risks and Considerations</h3>
+    <ul>
+        {% for risk in analysis.risks %}
+        <li>{{ risk }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Current Cluster Status</h2>
+    <div class="metrics">
+        {% if cluster_data.health %}
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.nodes_ready | default('N/A') }}/{{ cluster_data.health.nodes_count | default('N/A') }}</div>
+            <div class="metric-label">Nodes Ready</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.pods_running | default('N/A') }}</div>
+            <div class="metric-label">Pods Running</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.pods_failed | default(0) }}</div>
+            <div class="metric-label">Pods Failed</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ cluster_data.health.namespaces_count | default('N/A') }}</div>
+            <div class="metric-label">Namespaces</div>
+        </div>
+        {% else %}
+        <p>Cluster information not available.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recommended Actions</h2>
+    {% if analysis.implementation_steps %}
+    <h3>Implementation Steps</h3>
+    <ol>
+        {% for step in analysis.implementation_steps %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+    {% elif analysis.recommendations %}
+    <ol>
+        {% for rec in analysis.recommendations %}
+        <li>{{ rec }}</li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p>No specific actions recommended at this time.</p>
+    {% endif %}
+</div>
+
+{% if cluster_data.namespaces %}
+<div class="card">
+    <h2>Cluster Namespaces</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Namespace</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for namespace in cluster_data.namespaces %}
+            <tr>
+                <td>{{ namespace.name }}</td>
+                <td>
+                    <span class="status-badge status-{{ namespace.status | lower }}">
+                        {{ namespace.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if cluster_data.nodes %}
+<div class="card">
+    <h2>Cluster Nodes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Ready</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for node in cluster_data.nodes %}
+            <tr>
+                <td>{{ node.name }}</td>
+                <td>
+                    <span class="status-badge status-{{ node.status | lower }}">
+                        {{ node.status }}
+                    </span>
+                </td>
+                <td>{{ node.ready }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Key Recommendations</h2>
+    {% if analysis.recommendations %}
+    <div class="recommendations">
+        <ol>
+            {% for rec in analysis.recommendations %}
+            <li>{{ rec }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% else %}
+    <p>Routine maintenance checks completed. No critical actions required.</p>
+    {% endif %}
+</div>
+{% endblock %}
