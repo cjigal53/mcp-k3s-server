@@ -1,0 +1,21 @@
+# Kubernetes and k3s client
+kubernetes>=27.2.0
+
+# MCP Server
+mcp>=0.1.0
+
+# Logging and configuration
+python-dotenv>=1.0.0
+pydantic-settings>=2.0.0
+pydantic>=2.0.0
+
+# Utilities
+requests>=2.31.0
+PyYAML>=6.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
